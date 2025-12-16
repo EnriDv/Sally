@@ -20,7 +20,7 @@
         <receiver android:name=".utils.NotificationReceiver" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value=".env.API_KEY" />
+            android:value="${MAPS_KEY_PLACEHOLDER}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

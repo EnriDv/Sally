@@ -1,9 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.27"
     alias(libs.plugins.kotlin.serialization)
+}
+
+// 1. Crear objeto Properties y leer el archivo .env
+val envProps = Properties()
+val envFile = rootProject.file(".env") // Busca en la raíz del proyecto
+
+if (envFile.exists()) {
+    envProps.load(envFile.inputStream())
 }
 
 android {
@@ -16,7 +26,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
+        manifestPlaceholders["MAPS_KEY_PLACEHOLDER"] = envProps.getProperty("MAPS_API_KEY", "CLAVE_NO_ENCONTRADA")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
