@@ -14,13 +14,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
+import com.example.sally.data.models.ClosedState
+import com.example.sally.data.models.OpenState
+import com.example.sally.data.models.mockSalons
 import com.example.sally.ui.components.SalyTopBar
 import com.example.sally.ui.screens.chats.ChatsScreen
 import com.example.sally.ui.screens.favorites.FavoritesScreen
 import com.example.sally.ui.screens.home.HomeScreen
+import com.example.sally.ui.screens.map.MapScreen
+import com.example.sally.ui.screens.profile.AppointmentsScreen
 import com.example.sally.ui.screens.profile.ProfileScreen
+import com.example.sally.ui.screens.salon.BookingScreen
+import com.example.sally.ui.screens.salon.SalonProfileScreen
 import com.example.sally.ui.theme.PurpleStart
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -107,6 +117,68 @@ fun MainApp() {
                 composable("favorites") { FavoritesScreen(navController) }
                 composable("chats") { ChatsScreen(navController) }
                 composable("profile") { ProfileScreen(navController) }
+
+                composable(
+                    route = "salon_profile/{salonId}",
+                    arguments = listOf(navArgument("salonId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val salonId = backStackEntry.arguments?.getInt("salonId") ?: 0
+                    val selectedSalon = mockSalons.find { it.id == salonId } ?: mockSalons[0]
+                    val initialState = if (selectedSalon.isClosed) ClosedState() else OpenState()
+
+                    SalonProfileScreen(
+                        navController = navController,
+                        initialState = initialState,
+                        salonData = selectedSalon
+                    )
+                }
+                composable(
+                    route = "appointments/{tabIndex}",
+                    arguments = listOf(navArgument("tabIndex") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val tabIndex = backStackEntry.arguments?.getInt("tabIndex") ?: 0
+                    AppointmentsScreen(navController = navController, initialTab = tabIndex)
+                }
+                composable(
+                    route = "booking/{salonName}/{salonAddress}/{serviceName}/{servicePrice}",
+                    arguments = listOf(
+                        navArgument("salonName") { type = NavType.StringType },
+                        navArgument("salonAddress") { type = NavType.StringType },
+                        navArgument("serviceName") { type = NavType.StringType },
+                        navArgument("servicePrice") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val salonName = backStackEntry.arguments?.getString("salonName") ?: ""
+                    val salonAddress = backStackEntry.arguments?.getString("salonAddress") ?: ""
+                    val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
+                    val servicePrice = backStackEntry.arguments?.getString("servicePrice") ?: ""
+
+                    BookingScreen(
+                        navController = navController,
+                        salonName = salonName,
+                        salonAddress = salonAddress,
+                        serviceName = serviceName,
+                        servicePrice = servicePrice
+                    )
+                }
+                composable(
+                    route = "map/{salonName}/{lat}/{lng}",
+                    arguments = listOf(
+                        navArgument("salonName") { type = NavType.StringType },
+                        navArgument("lat") { type = NavType.FloatType },
+                        navArgument("lng") { type = NavType.FloatType }
+                    )
+                ) { backStackEntry ->
+                    val name = backStackEntry.arguments?.getString("salonName") ?: ""
+                    val lat = backStackEntry.arguments?.getFloat("lat") ?: 0f
+                    val lng = backStackEntry.arguments?.getFloat("lng") ?: 0f
+
+                    MapScreen(
+                        navController = navController,
+                        salonName = name,
+                        targetLocation = LatLng(lat.toDouble(), lng.toDouble())
+                    )
+                }
             }
         }
     }
