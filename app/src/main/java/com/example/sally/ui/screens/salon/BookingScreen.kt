@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.example.sally.data.local.AppDatabase
+import com.example.sally.data.local.Appointment
 import com.example.sally.data.models.Specialist
 import com.example.sally.data.models.mockSpecialists
 import com.example.sally.ui.components.SpecialistSelectionItem
