@@ -59,3 +59,27 @@ val mockSalons = listOf(
         "Av. Cristo Redentor, Norte"
     )
 )
+
+interface SalonStateBehavior {
+    val contentAlpha: Float
+    val isDialogVisible: Boolean
+    val actionButtonText: String
+    val isActionEnabled: Boolean
+    val actionButtonColor: Color
+}
+
+class OpenState : SalonStateBehavior {
+    override val contentAlpha: Float = 1f
+    override val isDialogVisible: Boolean = false
+    override val actionButtonText: String = "+ AGENDAR UNA CITA"
+    override val isActionEnabled: Boolean = true
+    override val actionButtonColor: Color = Color(0xFF9810FA)
+}
+
+class ClosedState : SalonStateBehavior {
+    override val contentAlpha: Float = 0.3f
+    override val isDialogVisible: Boolean = true
+    override val actionButtonText: String = "NO DISPONIBLE"
+    override val isActionEnabled: Boolean = false
+    override val actionButtonColor: Color = Color.Gray
+}
