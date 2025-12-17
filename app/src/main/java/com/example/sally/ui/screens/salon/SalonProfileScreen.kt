@@ -310,7 +310,7 @@ fun SalonProfileScreen(
                                 StandardCharsets.UTF_8.toString()
                             )
 
-                            navController.navigate("booking/$encodedSalonName/$encodedAddress/$encodedServiceName/$encodedPrice")
+                            navController.navigate("booking/${salonData.id}/$encodedSalonName/$encodedAddress/$encodedServiceName/$encodedPrice")
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }

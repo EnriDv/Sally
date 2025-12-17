@@ -27,7 +27,7 @@ import androidx.navigation.NavController
 import com.example.sally.NotificationUtils
 import com.example.sally.data.models.Appointment
 import com.example.sally.data.models.Specialist
-import com.example.sally.data.models.mockSpecialists
+// import com.example.sally.data.models.mockSpecialists <--- BORRADO (Ya no lo usamos)
 import com.example.sally.ui.components.SpecialistSelectionItem
 import com.example.sally.ui.components.TimeSlotChip
 import java.net.URLDecoder
@@ -38,6 +38,7 @@ import java.util.*
 @Composable
 fun BookingScreen(
     navController: NavController,
+    salonId: Long, // <--- NUEVO PARÁMETRO
     salonName: String,
     salonAddress: String,
     serviceName: String,
@@ -46,6 +47,14 @@ fun BookingScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+
+    // OBSERVAMOS LA LISTA REAL DE ESPECIALISTAS
+    val specialists by viewModel.specialists.collectAsState()
+
+    // CARGAMOS LOS ESPECIALISTAS AL ENTRAR
+    LaunchedEffect(salonId) {
+        viewModel.loadSpecialists(salonId)
+    }
 
     var hasNotificationPermission by remember {
         mutableStateOf(
@@ -123,7 +132,6 @@ fun BookingScreen(
                         val dateMillis = datePickerState.selectedDateMillis
                         if (dateMillis != null && selectedTime != null && selectedSpecialist != null) {
 
-                            // CREAMOS EL OBJETO CITA
                             val newAppointment = Appointment(
                                 salonName = salonName,
                                 salonAddress = decodedAddress,
@@ -141,7 +149,7 @@ fun BookingScreen(
                             Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    enabled = uiState !is AppointmentUiState.Loading, // Deshabilitar si está cargando
+                    enabled = uiState !is AppointmentUiState.Loading,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(25.dp)
@@ -195,13 +203,18 @@ fun BookingScreen(
             Text("Seleccionar Especialista", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
-                items(mockSpecialists) { specialist ->
-                    SpecialistSelectionItem(
-                        specialist = specialist,
-                        isSelected = specialist == selectedSpecialist,
-                        onClick = { selectedSpecialist = specialist }
-                    )
+            // AQUI ESTABA EL MOCK, AHORA USAMOS 'specialists' QUE VIENE DE SUPABASE
+            if (specialists.isEmpty()) {
+                Text("Cargando especialistas...", fontSize = 14.sp, color = Color.Gray)
+            } else {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
+                    items(specialists) { specialist ->
+                        SpecialistSelectionItem(
+                            specialist = specialist,
+                            isSelected = specialist == selectedSpecialist,
+                            onClick = { selectedSpecialist = specialist }
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(100.dp))

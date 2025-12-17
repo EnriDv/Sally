@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
+import com.example.sally.data.models.Specialist
+import com.example.sally.data.repository.SpecialistRepository
 sealed class AppointmentUiState {
     object Idle : AppointmentUiState()
     object Loading : AppointmentUiState()
@@ -19,16 +20,22 @@ sealed class AppointmentUiState {
 class AppointmentsViewModel : ViewModel() {
 
     private val repository = AppointmentRepository()
+    private val specialistRepository = SpecialistRepository()
 
-    // Lista de citas (para la pantalla "Mis Citas")
+    private val _specialists = MutableStateFlow<List<Specialist>>(emptyList())
+    val specialists: StateFlow<List<Specialist>> = _specialists.asStateFlow()
     private val _appointments = MutableStateFlow<List<Appointment>>(emptyList())
     val appointments: StateFlow<List<Appointment>> = _appointments.asStateFlow()
 
-    // Estado general de la UI (para cargas y errores)
     private val _uiState = MutableStateFlow<AppointmentUiState>(AppointmentUiState.Idle)
     val uiState: StateFlow<AppointmentUiState> = _uiState.asStateFlow()
 
-    // Cargar citas al iniciar (opcional, o llamar manualmente)
+    fun loadSpecialists(salonId: Long) {
+        viewModelScope.launch {
+            val result = specialistRepository.getSpecialistsBySalon(salonId)
+            _specialists.value = result
+        }
+    }
     fun fetchAppointments() {
         viewModelScope.launch {
             _uiState.value = AppointmentUiState.Loading
@@ -38,7 +45,6 @@ class AppointmentsViewModel : ViewModel() {
         }
     }
 
-    // Crear nueva cita
     fun createAppointment(appointment: Appointment) {
         viewModelScope.launch {
             _uiState.value = AppointmentUiState.Loading

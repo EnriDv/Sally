@@ -176,14 +176,18 @@ fun MainApp() {
                     AppointmentsScreen(navController = navController, initialTab = tabIndex)
                 }
                 composable(
-                    route = "booking/{salonName}/{salonAddress}/{serviceName}/{servicePrice}",
+                    // AGREGAMOS {salonId} A LA RUTA
+                    route = "booking/{salonId}/{salonName}/{salonAddress}/{serviceName}/{servicePrice}",
                     arguments = listOf(
+                        // AGREGAMOS EL ARGUMENTO LONG
+                        navArgument("salonId") { type = NavType.LongType },
                         navArgument("salonName") { type = NavType.StringType },
                         navArgument("salonAddress") { type = NavType.StringType },
                         navArgument("serviceName") { type = NavType.StringType },
                         navArgument("servicePrice") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
+                    val salonId = backStackEntry.arguments?.getLong("salonId") ?: 0L
                     val salonName = backStackEntry.arguments?.getString("salonName") ?: ""
                     val salonAddress = backStackEntry.arguments?.getString("salonAddress") ?: ""
                     val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
@@ -191,6 +195,7 @@ fun MainApp() {
 
                     BookingScreen(
                         navController = navController,
+                        salonId = salonId,
                         salonName = salonName,
                         salonAddress = salonAddress,
                         serviceName = serviceName,
