@@ -1,6 +1,5 @@
 package com.example.sally.ui.screens.map
 
-
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,12 +16,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Settings // Icono de configuración
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -30,8 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
-import com.example.sally.ui.theme.GrayText
-import com.example.sally.ui.theme.PurpleStart
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -45,7 +41,6 @@ fun MapScreen(
     targetLocation: LatLng
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(targetLocation, 15f)
@@ -114,12 +109,24 @@ fun MapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ubicación del Salón") },
+                title = {
+                    Text(
+                        "Ubicación del Salón",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Atrás")
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Atrás",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
     ) { innerPadding ->
@@ -143,7 +150,7 @@ fun MapScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Row(
@@ -154,7 +161,10 @@ fun MapScreen(
                         modifier = Modifier
                             .size(50.dp)
                             .background(
-                                if (isPermissionDenied) Color.Red.copy(alpha = 0.1f) else PurpleStart.copy(alpha = 0.1f),
+                                if (isPermissionDenied)
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+                                else
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                                 RoundedCornerShape(12.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -162,20 +172,25 @@ fun MapScreen(
                         Icon(
                             if (isPermissionDenied) Icons.Default.Settings else Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = if (isPermissionDenied) Color.Red else PurpleStart
+                            tint = if (isPermissionDenied) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                         )
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column {
-                        Text(salonName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(
+                            salonName,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                         Spacer(modifier = Modifier.height(4.dp))
 
                         if (isPermissionDenied) {
                             Text(
                                 "Activar ubicación en Configuración",
-                                color = Color.Red,
+                                color = MaterialTheme.colorScheme.error,
                                 fontSize = 14.sp,
                                 textDecoration = TextDecoration.Underline,
                                 fontWeight = FontWeight.SemiBold,
@@ -188,9 +203,18 @@ fun MapScreen(
                             )
                         } else {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.DirectionsCar, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(14.dp))
+                                Icon(
+                                    Icons.Default.DirectionsCar,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(14.dp)
+                                )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Distancia: $distanceText", color = GrayText, fontSize = 14.sp)
+                                Text(
+                                    "Distancia: $distanceText",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
                             }
                         }
                     }

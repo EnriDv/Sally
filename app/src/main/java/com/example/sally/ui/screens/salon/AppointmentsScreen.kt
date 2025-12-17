@@ -20,7 +20,6 @@ import androidx.navigation.NavController
 import com.example.sally.data.local.AppDatabase
 import com.example.sally.ui.components.AppointmentCard
 import com.example.sally.ui.components.TabButton
-import com.example.sally.ui.theme.BackgroundColor
 import com.example.sally.ui.theme.MainGradient
 import kotlinx.coroutines.launch
 
@@ -50,7 +49,7 @@ fun AppointmentsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // --- HEADER ---
         Box(
@@ -76,7 +75,7 @@ fun AppointmentsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .background(Color.White, RoundedCornerShape(25.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(25.dp))
                 .padding(4.dp)
         ) {
             TabButton(
@@ -113,4 +112,3 @@ fun AppointmentsScreen(
         }
     }
 }
-

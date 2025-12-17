@@ -76,7 +76,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.maps.compose)
     implementation(libs.play.services.location)
-    implementation(libs.supabase.gotrue)   // Auth
+    implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest) // Base de datos
     implementation(libs.ktor.client.cio)
     implementation(libs.kotlinx.serialization.json)

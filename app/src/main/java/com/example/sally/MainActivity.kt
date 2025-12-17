@@ -26,24 +26,15 @@ import com.example.sally.ui.screens.chats.ChatsScreen
 import com.example.sally.ui.screens.favorites.FavoritesScreen
 import com.example.sally.ui.screens.home.HomeScreen
 import com.example.sally.ui.screens.map.MapScreen
-import com.example.sally.ui.screens.profile.HelpCenterScreen
-import com.example.sally.ui.screens.profile.LanguageScreen
-import com.example.sally.ui.screens.profile.PersonalInfoScreen
-import com.example.sally.ui.screens.profile.PrivacyScreen
+import com.example.sally.ui.screens.profile.*
 import com.example.sally.ui.screens.salon.AppointmentsScreen
-import com.example.sally.ui.screens.profile.ProfileScreen
-import com.example.sally.ui.screens.profile.SecurityScreen
-import com.example.sally.ui.screens.profile.SupportScreen
-import com.example.sally.ui.screens.profile.ThemeSelectionScreen
 import com.example.sally.ui.screens.salon.BookingScreen
 import com.example.sally.ui.screens.salon.SalonProfileScreen
-import com.example.sally.ui.theme.PurpleStart
-import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.launch
-
 import com.example.sally.ui.theme.SallyTheme
 import com.example.sally.utils.AppThemeMode
 import com.example.sally.utils.ThemeManager
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,7 +86,8 @@ fun MainApp() {
                 NavigationDrawerItem(
                     label = { Text("Configuración") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = { scope.launch { drawerState.close() } },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
         }
@@ -108,7 +100,10 @@ fun MainApp() {
             },
             bottomBar = {
                 if (isMainScreen) {
-                    NavigationBar(containerColor = Color.White, tonalElevation = 8.dp) {
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 8.dp
+                    ) {
                         items.forEach { (route, label, icon) ->
                             NavigationBarItem(
                                 icon = { Icon(icon, contentDescription = label) },
@@ -122,8 +117,10 @@ fun MainApp() {
                                     }
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = PurpleStart,
-                                    selectedTextColor = PurpleStart,
+                                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                     indicatorColor = Color.Transparent
                                 )
                             )

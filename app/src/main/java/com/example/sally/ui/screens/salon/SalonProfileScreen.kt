@@ -30,11 +30,7 @@ import com.example.sally.data.models.Service
 import com.example.sally.data.models.mockServices
 import com.example.sally.data.models.mockSpecialists
 import com.example.sally.ui.components.SectionHeader
-import com.example.sally.ui.theme.BackgroundColor
-import com.example.sally.ui.theme.GrayText
 import com.example.sally.ui.theme.MainGradient
-import com.example.sally.ui.theme.PinkEnd
-import com.example.sally.ui.theme.PurpleStart
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -49,7 +45,11 @@ fun SalonProfileScreen(
 
     var selectedService by remember { mutableStateOf<Service?>(null) }
 
-    Box(modifier = Modifier.fillMaxSize().background(BackgroundColor)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
 
         Column(
             modifier = Modifier
@@ -59,16 +59,33 @@ fun SalonProfileScreen(
                 .padding(bottom = 100.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = null)
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
                 }
-                Text("Perfil del Salón", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "Perfil del Salón",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Row {
-                    IconButton(onClick = {}) { Icon(Icons.Default.Search, contentDescription = null) }
+                    IconButton(onClick = {}) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
 
@@ -80,7 +97,12 @@ fun SalonProfileScreen(
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(salonData.name, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    salonData.name,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
@@ -91,19 +113,49 @@ fun SalonProfileScreen(
                         }
                         .padding(vertical = 4.dp)
                 ) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = PurpleStart, modifier = Modifier.size(18.dp))
-                    Text(" ${salonData.address}", modifier = Modifier.padding(start = 4.dp), color = GrayText, fontSize = 14.sp)
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        " ${salonData.address}",
+                        modifier = Modifier.padding(start = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = PurpleStart, modifier = Modifier.size(18.dp))
-                    Text(" 9:00 AM - 8:00 PM", modifier = Modifier.padding(start = 4.dp), color = GrayText, fontSize = 14.sp)
+                    Icon(
+                        Icons.Outlined.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        " 9:00 AM - 8:00 PM",
+                        modifier = Modifier.padding(start = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Phone, contentDescription = null, tint = PurpleStart, modifier = Modifier.size(18.dp))
-                    Text(" +531 780 98 145", modifier = Modifier.padding(start = 4.dp), color = GrayText, fontSize = 14.sp)
+                    Icon(
+                        Icons.Default.Phone,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        " +531 780 98 145",
+                        modifier = Modifier.padding(start = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
                 }
             }
 
@@ -119,16 +171,34 @@ fun SalonProfileScreen(
                                 .size(64.dp)
                                 .clip(CircleShape)
                                 .background(specialist.color)
-                                .border(1.dp, Color.White, CircleShape),
+                                .border(1.dp, MaterialTheme.colorScheme.surface, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(specialist.name.take(1), fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                specialist.name.take(1),
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(specialist.name.split(" ")[0], fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(
+                            specialist.name.split(" ")[0],
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(10.dp))
-                            Text(" ${specialist.rating}", fontSize = 10.sp, color = GrayText)
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFFD700),
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Text(
+                                " ${specialist.rating}",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -142,9 +212,14 @@ fun SalonProfileScreen(
                 items(mockServices) { service ->
                     val isSelected = selectedService == service
 
+                    val containerColor =
+                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer
+                    val contentColor =
+                        if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) PurpleStart else Color(0xFFFCE4EC)
+                            containerColor = containerColor
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
@@ -152,14 +227,16 @@ fun SalonProfileScreen(
                             .clickable { selectedService = service }
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp).width(100.dp),
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .width(100.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
                             Icon(
                                 service.icon,
                                 contentDescription = null,
-                                tint = if (isSelected) Color.White else PinkEnd,
+                                tint = contentColor,
                                 modifier = Modifier.size(28.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -169,12 +246,12 @@ fun SalonProfileScreen(
                                 textAlign = TextAlign.Center,
                                 lineHeight = 16.sp,
                                 maxLines = 2,
-                                color = if (isSelected) Color.White else Color.Black
+                                color = contentColor
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 service.price,
-                                color = if (isSelected) Color.White else PurpleStart,
+                                color = if (isSelected) contentColor else MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -189,7 +266,10 @@ fun SalonProfileScreen(
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.White.copy(alpha = 0f), Color.White),
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                            MaterialTheme.colorScheme.background
+                        ),
                         startY = 0f,
                         endY = 50f
                     )
@@ -200,10 +280,22 @@ fun SalonProfileScreen(
                 onClick = {
                     if (selectedService != null) {
                         try {
-                            val encodedSalonName = URLEncoder.encode(salonData.name, StandardCharsets.UTF_8.toString())
-                            val encodedAddress = URLEncoder.encode(salonData.address, StandardCharsets.UTF_8.toString())
-                            val encodedServiceName = URLEncoder.encode(selectedService!!.name, StandardCharsets.UTF_8.toString())
-                            val encodedPrice = URLEncoder.encode(selectedService!!.price, StandardCharsets.UTF_8.toString())
+                            val encodedSalonName = URLEncoder.encode(
+                                salonData.name,
+                                StandardCharsets.UTF_8.toString()
+                            )
+                            val encodedAddress = URLEncoder.encode(
+                                salonData.address,
+                                StandardCharsets.UTF_8.toString()
+                            )
+                            val encodedServiceName = URLEncoder.encode(
+                                selectedService!!.name,
+                                StandardCharsets.UTF_8.toString()
+                            )
+                            val encodedPrice = URLEncoder.encode(
+                                selectedService!!.price,
+                                StandardCharsets.UTF_8.toString()
+                            )
 
                             navController.navigate("booking/$encodedSalonName/$encodedAddress/$encodedServiceName/$encodedPrice")
                         } catch (e: Exception) {
@@ -218,11 +310,12 @@ fun SalonProfileScreen(
                     .shadow(8.dp, RoundedCornerShape(28.dp)),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = currentState.actionButtonColor,
+                    containerColor = if (currentState.isActionEnabled) MaterialTheme.colorScheme.primary else Color.Gray,
                     disabledContainerColor = Color.Gray
                 )
             ) {
-                val buttonText = if (selectedService == null) "Selecciona un servicio" else currentState.actionButtonText
+                val buttonText =
+                    if (selectedService == null) "Selecciona un servicio" else currentState.actionButtonText
                 Text(buttonText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
@@ -231,33 +324,59 @@ fun SalonProfileScreen(
             Dialog(onDismissRequest = { isModalDismissed = true }) {
                 Card(
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         IconButton(
                             onClick = { isModalDismissed = true },
-                            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
 
                         Column(
-                            modifier = Modifier.padding(top = 34.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                            modifier = Modifier.padding(
+                                top = 34.dp,
+                                bottom = 24.dp,
+                                start = 24.dp,
+                                end = 24.dp
+                            ),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Box(
-                                modifier = Modifier.size(70.dp).clip(CircleShape).background(MainGradient),
+                                modifier = Modifier
+                                    .size(70.dp)
+                                    .clip(CircleShape)
+                                    .background(MainGradient),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
+                                Icon(
+                                    Icons.Outlined.Schedule,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(36.dp)
+                                )
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text("Salón Cerrado", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Salón Cerrado",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 "Lo sentimos, actualmente estamos cerrados.\nHorario: Lunes a Sábado\n9:00 AM - 8:00 PM",
-                                textAlign = TextAlign.Center, color = GrayText, fontSize = 14.sp
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp
                             )
                         }
                     }

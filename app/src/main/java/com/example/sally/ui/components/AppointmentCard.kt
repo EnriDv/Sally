@@ -24,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,18 +53,25 @@ fun AppointmentCard(
     val dateStr = dateFormat.format(Date(appointment.date))
 
     val statusLabel = if (appointment.status == "Cancelled") "Cancelada" else "Completada"
-    val statusColor = if (appointment.status == "Cancelled") Color(0xFFFF5252) else Color(0xFF4CAF50)
+    val statusColor = if (appointment.status == "Cancelled") MaterialTheme.colorScheme.error else Color(0xFF4CAF50)
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Brush.horizontalGradient(listOf(PurpleStart, PinkEnd)))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    )
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -81,7 +89,7 @@ fun AppointmentCard(
                 } else {
                     Box(
                         modifier = Modifier
-                            .background(Color(0xFFFFD700), RoundedCornerShape(4.dp)) // Amarillo para Próxima
+                            .background(Color(0xFFFFD700), RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text("Próxima", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -106,7 +114,7 @@ fun AppointmentCard(
                 if (!isHistory) {
                     Button(
                         onClick = onCancel,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)), // Rojo
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
@@ -117,8 +125,8 @@ fun AppointmentCard(
                 }
 
                 Button(
-                    onClick = { /* TODO: Navegar a detalles completos */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = PurpleStart),
+                    onClick = { },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {

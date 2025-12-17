@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sally.data.models.Specialist
-import com.example.sally.ui.theme.PurpleStart
 
 @Composable
 fun SpecialistSelectionItem(
@@ -44,7 +44,7 @@ fun SpecialistSelectionItem(
                 .size(70.dp)
                 .border(
                     width = if (isSelected) 3.dp else 0.dp,
-                    color = if (isSelected) PurpleStart else Color.Transparent,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                     shape = CircleShape
                 )
                 .padding(4.dp)
@@ -63,7 +63,7 @@ fun SpecialistSelectionItem(
             text = specialist.name.split(" ")[0],
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) PurpleStart else Color.Gray
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
         Row {
             repeat(5) {

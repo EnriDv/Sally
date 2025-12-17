@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sally.data.models.Salon
-import com.example.sally.ui.theme.GrayText
 
 @Composable
 fun SalonCard(salon: Salon, onClick: () -> Unit) {
@@ -34,7 +34,7 @@ fun SalonCard(salon: Salon, onClick: () -> Unit) {
             .width(200.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -45,10 +45,24 @@ fun SalonCard(salon: Salon, onClick: () -> Unit) {
                     .background(salon.coverColor)
             )
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(salon.name, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text(
+                    text = salon.name,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
-                    Text(" ${salon.rating} ${salon.reviews}", fontSize = 12.sp, color = GrayText)
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        " ${salon.rating} ${salon.reviews}",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

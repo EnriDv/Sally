@@ -1,6 +1,5 @@
 package com.example.sally.ui.screens.salon
 
-
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -11,15 +10,12 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -34,7 +30,6 @@ import com.example.sally.data.models.Specialist
 import com.example.sally.data.models.mockSpecialists
 import com.example.sally.ui.components.SpecialistSelectionItem
 import com.example.sally.ui.components.TimeSlotChip
-import com.example.sally.ui.theme.PurpleStart
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -57,7 +52,10 @@ fun BookingScreen(
     var hasNotificationPermission by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
             } else {
                 true
             }
@@ -81,6 +79,7 @@ fun BookingScreen(
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 return utcTimeMillis >= System.currentTimeMillis() - 86400000
             }
+
             override fun isSelectableYear(year: Int): Boolean {
                 return year >= Calendar.getInstance().get(Calendar.YEAR)
             }
@@ -89,32 +88,65 @@ fun BookingScreen(
     var selectedTime by remember { mutableStateOf<String?>(null) }
     var selectedSpecialist by remember { mutableStateOf<Specialist?>(null) }
 
-    val decodedAddress = remember(salonAddress) { URLDecoder.decode(salonAddress, StandardCharsets.UTF_8.toString()) }
-    val decodedServiceName = remember(serviceName) { URLDecoder.decode(serviceName, StandardCharsets.UTF_8.toString()) }
+    val decodedAddress = remember(salonAddress) {
+        URLDecoder.decode(salonAddress, StandardCharsets.UTF_8.toString())
+    }
+    val decodedServiceName = remember(serviceName) {
+        URLDecoder.decode(serviceName, StandardCharsets.UTF_8.toString())
+    }
 
-    val timeSlots = listOf("9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM", "4:00 PM")
+    val timeSlots =
+        listOf("9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM", "4:00 PM")
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Agenda una Cita", fontWeight = FontWeight.SemiBold) },
+                title = {
+                    Text(
+                        "Agenda una Cita",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = null)
+                        Icon(
+                            Icons.Default.ArrowBackIosNew,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
-                actions = { IconButton(onClick = {}) { Icon(Icons.Default.Search, contentDescription = null) } }
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         },
         bottomBar = {
-            Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
                 Button(
                     onClick = {
                         val dateMillis = datePickerState.selectedDateMillis
                         if (dateMillis != null && dateMillis < (System.currentTimeMillis() - 86400000)) {
-                            Toast.makeText(context, "No puedes agendar en el pasado", Toast.LENGTH_SHORT).show()
-                        }
-                        else if (dateMillis != null && selectedTime != null && selectedSpecialist != null) {
+                            Toast.makeText(
+                                context,
+                                "No puedes agendar en el pasado",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else if (dateMillis != null && selectedTime != null && selectedSpecialist != null) {
 
                             scope.launch {
                                 dao.insertAppointment(
@@ -171,7 +203,8 @@ fun BookingScreen(
                                     ).show()
                                 }
 
-                                Toast.makeText(context, "¡Cita agendada con éxito!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "¡Cita agendada con éxito!", Toast.LENGTH_SHORT)
+                                    .show()
 
                                 navController.navigate("home") {
                                     popUpTo("home") { inclusive = true }
@@ -179,14 +212,25 @@ fun BookingScreen(
                             }
 
                         } else {
-                            Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Por favor completa todos los campos",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = PurpleStart),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(25.dp)
                 ) {
-                    Text("Confirmar Cita ($servicePrice)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Confirmar Cita ($servicePrice)",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         }
@@ -195,19 +239,32 @@ fun BookingScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
+                // Configuración de colores para el DatePicker
                 val colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = PurpleStart,
-                    todayDateBorderColor = PurpleStart,
-                    todayContentColor = PurpleStart
+                    selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                    todayDateBorderColor = MaterialTheme.colorScheme.primary,
+                    todayContentColor = MaterialTheme.colorScheme.primary,
+                    dayContentColor = MaterialTheme.colorScheme.onSurface,
+                    weekdayContentColor = MaterialTheme.colorScheme.onSurface,
+                    headlineContentColor = MaterialTheme.colorScheme.onSurface,
+                    subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    yearContentColor = MaterialTheme.colorScheme.onSurface,
+                    currentYearContentColor = MaterialTheme.colorScheme.primary,
+                    selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                    selectedYearContainerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
+
                 DatePicker(
                     state = datePickerState,
                     colors = colors,
@@ -220,12 +277,20 @@ fun BookingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Horarios Disponibles", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            Text(
+                "Horarios Disponibles",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             Spacer(modifier = Modifier.height(12.dp))
 
             val chunkedSlots = timeSlots.chunked(2)
             chunkedSlots.forEach { pair ->
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     pair.forEach { time ->
                         TimeSlotChip(
                             time = time,
@@ -241,10 +306,18 @@ fun BookingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Seleccionar Especialista", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            Text(
+                "Seleccionar Especialista",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp)
+            ) {
                 items(mockSpecialists) { specialist ->
                     SpecialistSelectionItem(
                         specialist = specialist,

@@ -21,7 +21,10 @@ fun StatsCard(title: String, value: String, color: Color, modifier: Modifier = M
     Card(
         modifier = modifier.height(80.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = color),
+        colors = CardDefaults.cardColors(
+            containerColor = color,
+            contentColor = Color.White
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
@@ -29,8 +32,17 @@ fun StatsCard(title: String, value: String, color: Color, modifier: Modifier = M
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(title, color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
-            Text(value, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = title,
+                color = Color.White.copy(alpha = 0.9f),
+                fontSize = 12.sp
+            )
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

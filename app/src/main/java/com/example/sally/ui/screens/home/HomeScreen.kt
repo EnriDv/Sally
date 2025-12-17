@@ -1,13 +1,22 @@
 package com.example.sally.ui.screens.home
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,9 +29,7 @@ import com.example.sally.data.models.mockSalons
 import com.example.sally.data.models.mockServices
 import com.example.sally.ui.components.SalonCard
 import com.example.sally.ui.components.SectionHeader
-import com.example.sally.ui.theme.BackgroundColor
 import com.example.sally.ui.theme.MainGradient
-import com.example.sally.ui.theme.PinkEnd
 import com.example.sally.ui.theme.shimmerEffect
 import kotlinx.coroutines.delay
 
@@ -38,7 +45,7 @@ fun HomeScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(bottom = 80.dp)
     ) {
@@ -61,9 +68,18 @@ fun HomeScreen(navController: NavController) {
                     .background(MainGradient)
             ) {
                 Column(modifier = Modifier.align(Alignment.CenterStart).padding(20.dp)) {
-                    Text("Descubre tu belleza", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Descubre tu belleza",
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Los mejores salones cerca de ti", color = Color.White.copy(alpha = 0.9f), fontSize = 14.sp)
+                    Text(
+                        "Los mejores salones cerca de ti",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 14.sp
+                    )
                 }
             }
         }
@@ -88,13 +104,21 @@ fun HomeScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(70.dp)
                                 .clip(CircleShape)
-                                .background(Color.White),
+                                .background(MaterialTheme.colorScheme.surface),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(service.icon, contentDescription = null, tint = PinkEnd)
+                            Icon(
+                                service.icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(service.name, fontSize = 12.sp)
+                        Text(
+                            service.name,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
             }
@@ -111,7 +135,10 @@ fun HomeScreen(navController: NavController) {
                 }
             } else {
                 items(mockSalons) { salon ->
-                    SalonCard(salon = salon, onClick = { navController.navigate("salon_profile/${salon.id}") })
+                    SalonCard(
+                        salon = salon,
+                        onClick = { navController.navigate("salon_profile/${salon.id}") }
+                    )
                 }
             }
         }

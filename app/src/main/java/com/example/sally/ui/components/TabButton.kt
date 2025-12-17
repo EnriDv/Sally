@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,8 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sally.ui.theme.PurpleStart
-
 
 @Composable
 fun TabButton(text: String, count: Int, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier) {
@@ -28,8 +27,8 @@ fun TabButton(text: String, count: Int, isSelected: Boolean, onClick: () -> Unit
         onClick = onClick,
         modifier = modifier.height(40.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color.White else Color.Transparent,
-            contentColor = if (isSelected) PurpleStart else Color.Gray
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = if (isSelected) ButtonDefaults.buttonElevation(defaultElevation = 4.dp) else null,
         shape = RoundedCornerShape(20.dp)
@@ -41,10 +40,14 @@ fun TabButton(text: String, count: Int, isSelected: Boolean, onClick: () -> Unit
                 modifier = Modifier
                     .size(20.dp)
                     .clip(CircleShape)
-                    .background(if (isSelected) PurpleStart else Color.Gray),
+                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Text(count.toString(), color = Color.White, fontSize = 10.sp)
+                Text(
+                    count.toString(),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 10.sp
+                )
             }
         }
     }

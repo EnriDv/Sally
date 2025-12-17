@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sally.ui.theme.PurpleStart
 
 @Composable
 fun TimeSlotChip(
@@ -32,9 +32,12 @@ fun TimeSlotChip(
         onClick = onSelect,
         modifier = modifier.height(45.dp),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, if (isSelected) PurpleStart else Color.LightGray),
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        ),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (isSelected) PurpleStart.copy(alpha = 0.1f) else Color.Transparent
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
         )
     ) {
         Row(
@@ -44,14 +47,14 @@ fun TimeSlotChip(
         ) {
             Text(
                 text = time,
-                color = if (isSelected) PurpleStart else Color.Gray,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp
             )
             if (isSelected) {
                 Icon(
                     Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = PurpleStart,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
             }
