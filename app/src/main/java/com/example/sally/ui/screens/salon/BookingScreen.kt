@@ -22,18 +22,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.sally.NotificationUtils
-import com.example.sally.data.local.AppDatabase
-import com.example.sally.data.local.Appointment
+import com.example.sally.data.models.Appointment
 import com.example.sally.data.models.Specialist
 import com.example.sally.data.models.mockSpecialists
 import com.example.sally.ui.components.SpecialistSelectionItem
 import com.example.sally.ui.components.TimeSlotChip
-import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,11 +41,11 @@ fun BookingScreen(
     salonName: String,
     salonAddress: String,
     serviceName: String,
-    servicePrice: String
+    servicePrice: String,
+    viewModel: AppointmentsViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dao = remember { AppDatabase.getDatabase(context).appointmentDao() }
+    val uiState by viewModel.uiState.collectAsState()
 
     var hasNotificationPermission by remember {
         mutableStateOf(
@@ -61,16 +59,31 @@ fun BookingScreen(
             }
         )
     }
-
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted -> hasNotificationPermission = isGranted }
     )
-
     LaunchedEffect(Unit) {
         NotificationUtils.createNotificationChannel(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is AppointmentUiState.Success) {
+            Toast.makeText(context, "¡Cita agendada con éxito!", Toast.LENGTH_SHORT).show()
+            if (hasNotificationPermission) {
+                NotificationUtils.showImmediateNotification(context, "Reserva Confirmada", "Tu cita en $salonName ha sido guardada.")
+            }
+            navController.navigate("home") {
+                popUpTo("home") { inclusive = true }
+            }
+            viewModel.resetState()
+        } else if (uiState is AppointmentUiState.Error) {
+            val errorMsg = (uiState as AppointmentUiState.Error).message
+            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+            viewModel.resetState()
         }
     }
 
@@ -79,7 +92,6 @@ fun BookingScreen(
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 return utcTimeMillis >= System.currentTimeMillis() - 86400000
             }
-
             override fun isSelectableYear(year: Int): Boolean {
                 return year >= Calendar.getInstance().get(Calendar.YEAR)
             }
@@ -88,149 +100,57 @@ fun BookingScreen(
     var selectedTime by remember { mutableStateOf<String?>(null) }
     var selectedSpecialist by remember { mutableStateOf<Specialist?>(null) }
 
-    val decodedAddress = remember(salonAddress) {
-        URLDecoder.decode(salonAddress, StandardCharsets.UTF_8.toString())
-    }
-    val decodedServiceName = remember(serviceName) {
-        URLDecoder.decode(serviceName, StandardCharsets.UTF_8.toString())
-    }
-
-    val timeSlots =
-        listOf("9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM", "4:00 PM")
+    val decodedAddress = remember(salonAddress) { URLDecoder.decode(salonAddress, StandardCharsets.UTF_8.toString()) }
+    val decodedServiceName = remember(serviceName) { URLDecoder.decode(serviceName, StandardCharsets.UTF_8.toString()) }
+    val timeSlots = listOf("9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM", "4:00 PM")
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Agenda una Cita",
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
+                title = { Text("Agenda una Cita", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBackIosNew,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = null)
                     }
                 },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
+            Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Button(
                     onClick = {
                         val dateMillis = datePickerState.selectedDateMillis
-                        if (dateMillis != null && dateMillis < (System.currentTimeMillis() - 86400000)) {
-                            Toast.makeText(
-                                context,
-                                "No puedes agendar en el pasado",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else if (dateMillis != null && selectedTime != null && selectedSpecialist != null) {
+                        if (dateMillis != null && selectedTime != null && selectedSpecialist != null) {
 
-                            scope.launch {
-                                dao.insertAppointment(
-                                    Appointment(
-                                        salonName = salonName,
-                                        salonAddress = decodedAddress,
-                                        date = dateMillis,
-                                        time = selectedTime!!,
-                                        specialistName = selectedSpecialist!!.name,
-                                        serviceName = decodedServiceName,
-                                        price = servicePrice,
-                                        status = "Active"
-                                    )
-                                )
+                            // CREAMOS EL OBJETO CITA
+                            val newAppointment = Appointment(
+                                salonName = salonName,
+                                salonAddress = decodedAddress,
+                                date = dateMillis,
+                                time = selectedTime!!,
+                                specialistName = selectedSpecialist!!.name,
+                                serviceName = decodedServiceName,
+                                price = servicePrice,
+                                status = "Active"
+                            )
 
-                                if (hasNotificationPermission) {
-                                    NotificationUtils.showImmediateNotification(
-                                        context,
-                                        "¡Cita Confirmada!",
-                                        "Tu cita para $decodedServiceName en $salonName ha sido agendada."
-                                    )
-
-                                    try {
-                                        val timeFormat = SimpleDateFormat("h:mm a", Locale.US)
-                                        val timeDate = timeFormat.parse(selectedTime!!)
-
-                                        val calendar = Calendar.getInstance().apply {
-                                            timeInMillis = dateMillis
-                                            val timeCal = Calendar.getInstance().apply { time = timeDate!! }
-                                            set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY))
-                                            set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE))
-                                            set(Calendar.SECOND, 0)
-                                        }
-
-                                        val appointmentTime = calendar.timeInMillis
-                                        val reminderTime = appointmentTime - 3600000
-
-                                        if (reminderTime > System.currentTimeMillis()) {
-                                            NotificationUtils.scheduleNotification(
-                                                context,
-                                                reminderTime,
-                                                "Recordatorio de Cita",
-                                                "Tienes una cita en 1 hora en $salonName con ${selectedSpecialist!!.name}."
-                                            )
-                                        }
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Cita guardada. Activa notificaciones en Configuración para recibir recordatorios.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-
-                                Toast.makeText(context, "¡Cita agendada con éxito!", Toast.LENGTH_SHORT)
-                                    .show()
-
-                                navController.navigate("home") {
-                                    popUpTo("home") { inclusive = true }
-                                }
-                            }
+                            viewModel.createAppointment(newAppointment)
 
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Por favor completa todos los campos",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
+                    enabled = uiState !is AppointmentUiState.Loading, // Deshabilitar si está cargando
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(25.dp)
                 ) {
-                    Text(
-                        "Confirmar Cita ($servicePrice)",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                    if (uiState is AppointmentUiState.Loading) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Confirmar Cita ($servicePrice)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -248,56 +168,23 @@ fun BookingScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                // Configuración de colores para el DatePicker
                 val colors = DatePickerDefaults.colors(
                     selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
                     todayDateBorderColor = MaterialTheme.colorScheme.primary,
-                    todayContentColor = MaterialTheme.colorScheme.primary,
-                    dayContentColor = MaterialTheme.colorScheme.onSurface,
-                    weekdayContentColor = MaterialTheme.colorScheme.onSurface,
-                    headlineContentColor = MaterialTheme.colorScheme.onSurface,
-                    subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    yearContentColor = MaterialTheme.colorScheme.onSurface,
-                    currentYearContentColor = MaterialTheme.colorScheme.primary,
-                    selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
-                    selectedYearContainerColor = MaterialTheme.colorScheme.primary,
                     containerColor = MaterialTheme.colorScheme.surface
                 )
-
-                DatePicker(
-                    state = datePickerState,
-                    colors = colors,
-                    title = null,
-                    headline = null,
-                    showModeToggle = false,
-                    modifier = Modifier.padding(8.dp)
-                )
+                DatePicker(state = datePickerState, colors = colors, showModeToggle = false, modifier = Modifier.padding(8.dp), title = null, headline = null)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                "Horarios Disponibles",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Text("Horarios Disponibles", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(12.dp))
 
             val chunkedSlots = timeSlots.chunked(2)
             chunkedSlots.forEach { pair ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     pair.forEach { time ->
-                        TimeSlotChip(
-                            time = time,
-                            isSelected = time == selectedTime,
-                            onSelect = { selectedTime = time },
-                            modifier = Modifier.weight(1f)
-                        )
+                        TimeSlotChip(time = time, isSelected = time == selectedTime, onSelect = { selectedTime = time }, modifier = Modifier.weight(1f))
                     }
                     if (pair.size == 1) Spacer(modifier = Modifier.weight(1f))
                 }
@@ -305,19 +192,10 @@ fun BookingScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                "Seleccionar Especialista",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Text("Seleccionar Especialista", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp)
-            ) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
                 items(mockSpecialists) { specialist ->
                     SpecialistSelectionItem(
                         specialist = specialist,

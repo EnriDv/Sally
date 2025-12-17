@@ -12,36 +12,35 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.sally.data.local.AppDatabase
 import com.example.sally.ui.components.AppointmentCard
 import com.example.sally.ui.components.TabButton
 import com.example.sally.ui.theme.MainGradient
-import kotlinx.coroutines.launch
 
 @Composable
 fun AppointmentsScreen(
     navController: NavController,
-    initialTab: Int = 0
+    initialTab: Int = 0,
+    // Inyectamos el ViewModel
+    viewModel: AppointmentsViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dao = remember { AppDatabase.getDatabase(context).appointmentDao() }
+    // Estado de carga inicial
+    LaunchedEffect(Unit) {
+        viewModel.fetchAppointments()
+    }
 
-    val appointmentsList by dao.getAllAppointments().collectAsState(initial = emptyList())
-
+    val appointmentsList by viewModel.appointments.collectAsState()
     var selectedTab by remember { mutableStateOf(initialTab) }
-
     val currentTime = System.currentTimeMillis()
 
+    // Filtros locales (Supabase trae todo, nosotros filtramos en UI por ahora)
     val activeAppointments = appointmentsList.filter {
         it.status == "Active" && it.date >= (currentTime - 86400000)
     }
-
     val historyAppointments = appointmentsList.filter {
         it.status == "Cancelled" || (it.status == "Active" && it.date < (currentTime - 86400000))
     }
@@ -71,6 +70,7 @@ fun AppointmentsScreen(
             }
         }
 
+        // --- TABS ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,20 +94,32 @@ fun AppointmentsScreen(
             )
         }
 
+        // --- LISTA ---
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val listToShow = if (selectedTab == 0) activeAppointments else historyAppointments
 
-            items(listToShow) { appointment ->
-                AppointmentCard(
-                    appointment = appointment,
-                    isHistory = selectedTab == 1,
-                    onCancel = {
-                        scope.launch { dao.cancelAppointment(appointment.id) }
-                    }
-                )
+            if (listToShow.isEmpty()) {
+                item {
+                    Text(
+                        "No tienes citas en esta sección.",
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                items(listToShow) { appointment ->
+                    AppointmentCard(
+                        appointment = appointment,
+                        isHistory = selectedTab == 1,
+                        onCancel = {
+                            // Llamamos al ViewModel para cancelar
+                            viewModel.cancelAppointment(appointment.id)
+                        }
+                    )
+                }
             }
         }
     }

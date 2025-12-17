@@ -21,7 +21,10 @@ import androidx.navigation.navArgument
 import com.example.sally.data.models.ClosedState
 import com.example.sally.data.models.OpenState
 import com.example.sally.data.models.mockSalons
+import com.example.sally.data.SupabaseClient
 import com.example.sally.ui.components.SalyTopBar
+import com.example.sally.ui.screens.auth.LoginScreen
+import com.example.sally.ui.screens.auth.RegisterScreen
 import com.example.sally.ui.screens.chats.ChatsScreen
 import com.example.sally.ui.screens.favorites.FavoritesScreen
 import com.example.sally.ui.screens.home.HomeScreen
@@ -34,6 +37,7 @@ import com.example.sally.ui.theme.SallyTheme
 import com.example.sally.utils.AppThemeMode
 import com.example.sally.utils.ThemeManager
 import com.google.android.gms.maps.model.LatLng
+import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -62,6 +66,14 @@ fun MainApp() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    // En MainApp()
+    val startDestination = try {
+        if (SupabaseClient.client.auth.currentUserOrNull() != null) "home" else "login"
+    } catch (e: Exception) {
+        e.printStackTrace() // Mira el error en el Logcat
+        "login" // Valor por defecto para que no crashee
+    }
 
     val mainRoutes = listOf("home", "favorites", "chats", "profile")
 
@@ -131,9 +143,11 @@ fun MainApp() {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = "home",
+                startDestination = startDestination,
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable("login") { LoginScreen(navController) }
+                composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController) }
                 composable("favorites") { FavoritesScreen(navController) }
                 composable("chats") { ChatsScreen(navController) }
@@ -141,9 +155,10 @@ fun MainApp() {
 
                 composable(
                     route = "salon_profile/{salonId}",
-                    arguments = listOf(navArgument("salonId") { type = NavType.IntType })
+                    arguments = listOf(navArgument("salonId") { type = NavType.LongType })
                 ) { backStackEntry ->
-                    val salonId = backStackEntry.arguments?.getInt("salonId") ?: 0
+                    val salonId = backStackEntry.arguments?.getLong("salonId") ?: 0L
+
                     val selectedSalon = mockSalons.find { it.id == salonId } ?: mockSalons[0]
                     val initialState = if (selectedSalon.isClosed) ClosedState() else OpenState()
 

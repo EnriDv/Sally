@@ -1,139 +1,116 @@
 package com.example.sally.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sally.data.local.Appointment
-import com.example.sally.ui.components.AppointmentInfoRow
-import com.example.sally.ui.theme.PinkEnd
+import com.example.sally.data.models.Appointment // <--- IMPORTANTE: Usar el modelo nuevo
+import com.example.sally.ui.theme.GrayText
 import com.example.sally.ui.theme.PurpleStart
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
+import java.util.*
 
 @Composable
 fun AppointmentCard(
     appointment: Appointment,
-    isHistory: Boolean,
-    onCancel: () -> Unit
+    isHistory: Boolean = false,
+    onCancel: () -> Unit = {}
 ) {
-    val dateFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
-    val dateStr = dateFormat.format(Date(appointment.date))
-
-    val statusLabel = if (appointment.status == "Cancelled") "Cancelada" else "Completada"
-    val statusColor = if (appointment.status == "Cancelled") MaterialTheme.colorScheme.error else Color(0xFF4CAF50)
+    // Formatear la fecha (de Timestamp Long a Texto legible)
+    val dateString = remember(appointment.date) {
+        val formatter = SimpleDateFormat("dd MMM yyyy", Locale("es", "ES"))
+        formatter.format(Date(appointment.date))
+    }
 
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Encabezado: Nombre del Salón y Precio
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(appointment.salonName, color = Color.White, fontWeight = FontWeight.Bold)
-
-                if (isHistory) {
-                    Box(
-                        modifier = Modifier
-                            .background(statusColor, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(statusLabel, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .background(Color(0xFFFFD700), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text("Próxima", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
+                Text(
+                    text = appointment.salonName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = appointment.price,
+                    fontWeight = FontWeight.Bold,
+                    color = PurpleStart
+                )
             }
 
-            Column(modifier = Modifier.padding(16.dp)) {
-                AppointmentInfoRow(Icons.Default.Event, appointment.serviceName, appointment.price)
-                Spacer(modifier = Modifier.height(8.dp))
-                AppointmentInfoRow(Icons.Default.Person, "Especialista", appointment.specialistName)
-                Spacer(modifier = Modifier.height(8.dp))
-                AppointmentInfoRow(Icons.Default.Schedule, "Fecha y hora", "$dateStr a las ${appointment.time}")
-                Spacer(modifier = Modifier.height(8.dp))
-                AppointmentInfoRow(Icons.Default.LocationOn, "Ubicación", appointment.salonAddress)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Servicio y Especialista
+            Text(
+                text = "${appointment.serviceName} con ${appointment.specialistName}",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Datos de Fecha, Hora y Dirección
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.CalendarToday, contentDescription = null, tint = GrayText, modifier = Modifier.size(14.dp))
+                Text(" $dateString", fontSize = 12.sp, color = GrayText)
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(Icons.Default.Schedule, contentDescription = null, tint = GrayText, modifier = Modifier.size(14.dp))
+                Text(" ${appointment.time}", fontSize = 12.sp, color = GrayText)
             }
 
-            Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (!isHistory) {
-                    Button(
-                        onClick = onCancel,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Cancelar")
-                    }
-                }
+            Spacer(modifier = Modifier.height(4.dp))
 
-                Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.LocationOn, contentDescription = null, tint = GrayText, modifier = Modifier.size(14.dp))
+                Text(
+                    " ${appointment.salonAddress}",
+                    fontSize = 12.sp,
+                    color = GrayText,
+                    maxLines = 1
+                )
+            }
+
+            // Botón de Cancelar (Solo si no es historial y está activa)
+            if (!isHistory && appointment.status == "Active") {
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedButton(
+                    onClick = onCancel,
+                    modifier = Modifier.fillMaxWidth().height(36.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                    contentPadding = PaddingValues(0.dp)
                 ) {
-                    Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (isHistory) "Detalles" else "Ver Detalles")
+                    Text("Cancelar Cita", fontSize = 12.sp)
                 }
+            } else if (appointment.status == "Cancelled") {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Cancelado",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.End)
+                )
             }
         }
     }

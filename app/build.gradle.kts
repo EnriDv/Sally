@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,26 +9,36 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-// 1. Crear objeto Properties y leer el archivo .env
-val envProps = Properties()
-val envFile = rootProject.file(".env") // Busca en la raíz del proyecto
-
-if (envFile.exists()) {
-    envProps.load(envFile.inputStream())
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
     namespace = "com.example.sally"
+
     compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.sally"
         minSdk = 30
+
         targetSdk = 36
+
         versionCode = 1
         versionName = "1.0"
-        manifestPlaceholders["MAPS_KEY_PLACEHOLDER"] = envProps.getProperty("MAPS_API_KEY", "CLAVE_NO_ENCONTRADA")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val mapsKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders["MAPS_KEY_PLACEHOLDER"] = mapsKey
+
+        val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: ""
+        val supabaseKey = localProperties.getProperty("SUPABASE_KEY") ?: ""
+
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"$supabaseKey\"")
     }
 
     buildTypes {
@@ -47,11 +58,18 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
 
 dependencies {
+
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.0.1"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
+    implementation("io.github.jan-tennert.supabase:realtime-kt")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -67,6 +85,15 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.serialization.json)
+    implementation("io.ktor:ktor-client-android:3.0.1")
+    implementation("io.ktor:ktor-client-core:3.0.1")
+    implementation("io.ktor:ktor-client-cio:2.3.12")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.1")
+    implementation("io.ktor:ktor-client-content-negotiation:3.0.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,11 +101,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.maps.compose)
-    implementation(libs.play.services.location)
-    implementation(libs.supabase.auth)
-    implementation(libs.supabase.postgrest) // Base de datos
-    implementation(libs.ktor.client.cio)
-    implementation(libs.kotlinx.serialization.json)
-    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 }

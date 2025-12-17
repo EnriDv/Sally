@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,12 +24,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.sally.data.models.Salon
 import com.example.sally.data.models.SalonStateBehavior
 import com.example.sally.data.models.Service
-import com.example.sally.data.models.mockServices
-import com.example.sally.data.models.mockSpecialists
 import com.example.sally.ui.components.SectionHeader
 import com.example.sally.ui.theme.MainGradient
 import java.net.URLEncoder
@@ -38,12 +38,22 @@ import java.nio.charset.StandardCharsets
 fun SalonProfileScreen(
     navController: NavController,
     initialState: SalonStateBehavior,
-    salonData: Salon
+    salonData: Salon,
+    viewModel: SalonDetailsViewModel = viewModel()
 ) {
+    LaunchedEffect(salonData.id) {
+        viewModel.loadSalonDetails(salonData.id)
+    }
+    val services by viewModel.services.collectAsState()
+    val specialists by viewModel.specialists.collectAsState()
+
+    val isLoading by viewModel.isLoading.collectAsState()
+
     val currentState by remember { mutableStateOf(initialState) }
     var isModalDismissed by remember { mutableStateOf(false) }
 
     var selectedService by remember { mutableStateOf<Service?>(null) }
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     Box(
         modifier = Modifier
@@ -78,12 +88,14 @@ fun SalonProfileScreen(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Row {
-                    IconButton(onClick = {}) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(onClick = {
+                        viewModel.toggleFavorite(salonData.id)
+                    }) {
                         Icon(
-                            Icons.Default.Search,
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -164,7 +176,8 @@ fun SalonProfileScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(mockSpecialists) { specialist ->
+                // AQUÍ USAMOS LA LISTA REAL 'specialists'
+                items(specialists) { specialist ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier
@@ -209,7 +222,7 @@ fun SalonProfileScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(mockServices) { service ->
+                items(services) { service ->
                     val isSelected = selectedService == service
 
                     val containerColor =
