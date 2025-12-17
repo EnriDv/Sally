@@ -3,6 +3,7 @@ package com.example.sally
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -25,19 +26,42 @@ import com.example.sally.ui.screens.chats.ChatsScreen
 import com.example.sally.ui.screens.favorites.FavoritesScreen
 import com.example.sally.ui.screens.home.HomeScreen
 import com.example.sally.ui.screens.map.MapScreen
-import com.example.sally.ui.screens.profile.AppointmentsScreen
+import com.example.sally.ui.screens.profile.HelpCenterScreen
+import com.example.sally.ui.screens.profile.LanguageScreen
+import com.example.sally.ui.screens.profile.PersonalInfoScreen
+import com.example.sally.ui.screens.profile.PrivacyScreen
+import com.example.sally.ui.screens.salon.AppointmentsScreen
 import com.example.sally.ui.screens.profile.ProfileScreen
+import com.example.sally.ui.screens.profile.SecurityScreen
+import com.example.sally.ui.screens.profile.SupportScreen
+import com.example.sally.ui.screens.profile.ThemeSelectionScreen
 import com.example.sally.ui.screens.salon.BookingScreen
 import com.example.sally.ui.screens.salon.SalonProfileScreen
 import com.example.sally.ui.theme.PurpleStart
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
+import com.example.sally.ui.theme.SallyTheme
+import com.example.sally.utils.AppThemeMode
+import com.example.sally.utils.ThemeManager
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ThemeManager.init(applicationContext)
+
         setContent {
-            MainApp()
+            val themeMode by ThemeManager.themeMode.collectAsState()
+
+            val isDark = when (themeMode) {
+                AppThemeMode.DARK -> true
+                AppThemeMode.LIGHT -> false
+                AppThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+
+            SallyTheme(darkTheme = isDark) {
+                MainApp()
+            }
         }
     }
 }
@@ -179,6 +203,13 @@ fun MainApp() {
                         targetLocation = LatLng(lat.toDouble(), lng.toDouble())
                     )
                 }
+                composable("profile_personal_info") { PersonalInfoScreen(navController) }
+                composable("profile_security") { SecurityScreen(navController) }
+                composable("profile_language") { LanguageScreen(navController) }
+                composable("profile_privacy") { PrivacyScreen(navController) }
+                composable("profile_help") { HelpCenterScreen(navController) }
+                composable("profile_support") { SupportScreen(navController) }
+                composable("profile_theme") { ThemeSelectionScreen(navController) }
             }
         }
     }

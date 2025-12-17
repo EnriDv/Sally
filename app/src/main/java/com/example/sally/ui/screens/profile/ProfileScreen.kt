@@ -1,4 +1,10 @@
 package com.example.sally.ui.screens.profile
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sally.data.local.AppDatabase
@@ -35,21 +42,32 @@ import com.example.sally.ui.components.MenuItem
 import com.example.sally.ui.theme.BackgroundColor
 import com.example.sally.ui.theme.MainGradient
 import com.example.sally.ui.theme.PurpleStart
+import android.provider.Settings
 
 @Composable
 fun ProfileScreen(navController: NavController) {
     val context = LocalContext.current
     val dao = remember { AppDatabase.getDatabase(context).appointmentDao() }
 
-    val allAppointments by dao.getAllAppointments().collectAsState(initial = emptyList())
+     var hasNotificationPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+        )
+    }
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasNotificationPermission = isGranted }
+    )
+
+    val allAppointments by dao.getAllAppointments().collectAsState(initial = emptyList())
     val currentTime = System.currentTimeMillis()
-    val activeCount = allAppointments.count {
-        it.status == "Active" && it.date >= (currentTime - 86400000)
-    }
-    val historyCount = allAppointments.count {
-        it.status == "Cancelled" || (it.status == "Active" && it.date < (currentTime - 86400000))
-    }
+    val activeCount = allAppointments.count { it.status == "Active" && it.date >= (currentTime - 86400000) }
+    val historyCount = allAppointments.count { it.status == "Cancelled" || (it.status == "Active" && it.date < (currentTime - 86400000)) }
 
     Column(
         modifier = Modifier
@@ -58,51 +76,29 @@ fun ProfileScreen(navController: NavController) {
             .verticalScroll(rememberScrollState())
             .padding(bottom = 100.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(370.dp)
-                .padding(bottom = 24.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth().height(320.dp).padding(bottom = 24.dp)) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp)
-                    .background(MainGradient)
+                modifier = Modifier.fillMaxWidth().height(260.dp).background(MainGradient)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 40.dp),
+                    modifier = Modifier.fillMaxSize().padding(top = 40.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box {
+                        Box(modifier = Modifier.size(100.dp).clip(CircleShape).border(3.dp, Color.White, CircleShape).background(Color.Gray))
                         Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .border(3.dp, Color.White, CircleShape)
-                                .background(Color.Gray)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .align(Alignment.BottomEnd)
-                                .clip(CircleShape)
-                                .background(Color.White),
+                            modifier = Modifier.size(30.dp).align(Alignment.BottomEnd).clip(CircleShape).background(Color.White),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(Icons.Default.Edit, contentDescription = null, tint = PurpleStart, modifier = Modifier.size(16.dp))
                         }
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
                     Text("Jane Doe", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     Text("jhon.doe@email.com", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
-                        onClick = {},
+                        onClick = { navController.navigate("profile_personal_info") },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f)),
                         shape = RoundedCornerShape(20.dp),
                         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f))
@@ -113,62 +109,89 @@ fun ProfileScreen(navController: NavController) {
             }
 
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .offset(y = 10.dp),
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 24.dp).offset(y = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                StatsCard(
-                    title = "Mis Citas",
-                    value = activeCount.toString(),
-                    color = Color(0xFF9810FA),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { navController.navigate("appointments/0") }
-                )
-                StatsCard(
-                    title = "Historial",
-                    value = historyCount.toString(),
-                    color = Color(0xFFE60076),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { navController.navigate("appointments/1") }
-                )
+                StatsCard(title = "Mis Citas", value = activeCount.toString(), color = Color(0xFF9810FA), modifier = Modifier.weight(1f).clickable { navController.navigate("appointments/0") })
+                StatsCard(title = "Historial", value = historyCount.toString(), color = Color(0xFFE60076), modifier = Modifier.weight(1f).clickable { navController.navigate("appointments/1") })
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         MenuSection(title = "Configuración de Cuenta") {
-            MenuItem(icon = Icons.Outlined.Person, text = "Información Personal", subtitle = "Actualiza tus datos")
+            MenuItem(
+                icon = Icons.Outlined.Person,
+                text = "Información Personal",
+                subtitle = "Actualiza tus datos",
+                onClick = { navController.navigate("profile_personal_info") }
+            )
             HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = Color.LightGray.copy(alpha = 0.3f))
-            MenuItem(icon = Icons.Outlined.Email, text = "Email y Contraseña", subtitle = "Gestiona tu acceso")
+            MenuItem(
+                icon = Icons.Outlined.Email,
+                text = "Seguridad",
+                subtitle = "Email y Contraseña",
+                onClick = { navController.navigate("profile_security") }
+            )
         }
 
         MenuSection(title = "Preferencias") {
-            MenuItem(icon = Icons.Outlined.Notifications, text = "Notificaciones", subtitle = "Recibe alertas de citas", hasSwitch = true)
+            MenuItem(
+                icon = Icons.Outlined.Notifications,
+                text = "Notificaciones",
+                subtitle = if(hasNotificationPermission) "Activadas" else "Desactivadas",
+                hasSwitch = true,
+                isSwitchChecked = hasNotificationPermission,
+                onSwitchChanged = {
+                    if (!hasNotificationPermission) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    } else {
+                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        }
+                        context.startActivity(intent)
+                    }
+                }
+            )
             HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = Color.LightGray.copy(alpha = 0.3f))
-            MenuItem(icon = Icons.Outlined.Language, text = "Idioma", subtitle = "Español")
+            MenuItem(
+                icon = Icons.Outlined.Language,
+                text = "Apariencia",
+                subtitle = "Cambia de Tema",
+                onClick = { navController.navigate("profile_theme") }
+            )
             HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = Color.LightGray.copy(alpha = 0.3f))
-            MenuItem(icon = Icons.Outlined.Lock, text = "Privacidad", subtitle = "Controla tu información")
+            MenuItem(
+                icon = Icons.Outlined.Lock,
+                text = "Privacidad",
+                subtitle = "Controla tu información",
+                onClick = { navController.navigate("profile_privacy") }
+            )
         }
 
         MenuSection(title = "Ayuda y Soporte") {
-            MenuItem(icon = Icons.AutoMirrored.Outlined.Help, text = "Centro de Ayuda", subtitle = "FAQ y tutoriales")
+            MenuItem(
+                icon = Icons.AutoMirrored.Outlined.Help,
+                text = "Centro de Ayuda",
+                subtitle = "FAQ y tutoriales",
+                onClick = { navController.navigate("profile_help") }
+            )
             HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = Color.LightGray.copy(alpha = 0.3f))
-            MenuItem(icon = Icons.Outlined.Mail, text = "Contactar Soporte", subtitle = "Estamos aquí para ayudarte")
+            MenuItem(
+                icon = Icons.Outlined.Mail,
+                text = "Contactar Soporte",
+                subtitle = "Estamos aquí para ayudarte",
+                onClick = { navController.navigate("profile_support") }
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .height(50.dp),
+            onClick = { /* TODO: Logout Logic */ },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             shape = RoundedCornerShape(12.dp),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)

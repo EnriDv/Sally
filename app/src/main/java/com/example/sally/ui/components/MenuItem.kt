@@ -34,19 +34,24 @@ import com.example.sally.ui.theme.GrayText
 import com.example.sally.ui.theme.PurpleStart
 
 @Composable
-fun MenuItem(icon: ImageVector, text: String, subtitle: String, hasSwitch: Boolean = false) {
+fun MenuItem(
+    icon: ImageVector,
+    text: String,
+    subtitle: String,
+    hasSwitch: Boolean = false,
+    isSwitchChecked: Boolean = false,
+    onSwitchChanged: ((Boolean) -> Unit)? = null,
+    onClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { if (!hasSwitch) onClick() } // Solo click si no es switch
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(PurpleStart.copy(alpha = 0.1f)),
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(PurpleStart.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = PurpleStart, modifier = Modifier.size(20.dp))
@@ -57,15 +62,17 @@ fun MenuItem(icon: ImageVector, text: String, subtitle: String, hasSwitch: Boole
         Column(modifier = Modifier.weight(1f)) {
             Text(text, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
             Text(subtitle, color = GrayText, fontSize = 12.sp)
-            Text(subtitle, color = GrayText, fontSize = 12.sp)
         }
 
         if (hasSwitch) {
-            var checked by remember { mutableStateOf(true) }
             Switch(
-                checked = checked,
-                onCheckedChange = { checked = it },
-                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = PurpleStart)
+                checked = isSwitchChecked,
+                onCheckedChange = onSwitchChanged,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = PurpleStart,
+                    uncheckedTrackColor = Color.LightGray.copy(alpha = 0.3f)
+                )
             )
         } else {
             Icon(Icons.Default.ChevronRight, contentDescription = null, tint = GrayText)
